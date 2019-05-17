@@ -3,21 +3,50 @@
 #include <vector>
 #include <fstream>
 
-void save_games() {
+// Pulls all current stored games and saves them to a txt file to load later.
+void save_games(vector<Game> games) {
     ofstream save("games.txt");
     if(!save) {
         cerr << "Cannot open save file.";
         exit(0);
     }
-    save << "Example title\n";
+    for(Game currgame : games) {
+        save << currgame.get_title() << endl;
+        if(currgame.has_played()) {
+            save << "y\n";
+        } else {
+            save << "n\n";
+        }
+    }
     save.close();
+}
+
+// Pulls the games from the old save file.
+vector<Game> load_games() {
+    vector<Game> loaded_games;
+    ifstream load("games.txt");
+    string line, title;
+    char played;
+    while(getline(load, line)) {
+        title = line;
+        getline(load, line);
+        played = line.at(0);
+        bool has_played = false;
+        if(played == 'y') {
+            has_played = true;
+        }
+        Game add_game(title, has_played);
+        loaded_games.push_back(add_game);
+    }
+    load.close();
+    return loaded_games;
 }
 
 int main() {
     int i;
-    vector<Game> games;
+    vector<Game> games = load_games();
     while(true) {
-        cout << "Enter your choice\n1: Add game\n2: list games\n3: exit\n";
+        cout << "\nEnter your choice\n1: Add game\n2: list games\n3: exit\n";
         cin >> i;
         cin.ignore();
         if(i == 1) {
@@ -49,7 +78,7 @@ int main() {
                     unplayed_games.push_back(currGame);
                 }
             }
-            cout << "PLAYED GAMES\n==============\n";
+            cout << "\n\nPLAYED GAMES\n==============\n";
             for(Game a : played_games) {
                 cout << a.get_title() << endl;
             }
@@ -58,7 +87,7 @@ int main() {
                 cout << b.get_title() << endl;
             }
         } else if(i == 3) {
-            save_games();
+            save_games(games);
             cout << "k bye\n";
             exit(0);
         } else {
